@@ -25,22 +25,22 @@ export function Footer() {
                     <a href="mailto:zestacademy@rsmk.co.in" className="hover:text-primary transition-colors">
                         zestacademy@rsmk.co.in
                     </a>
-                    <Link href="/about-us" className="hover:text-primary transition-colors">
+                    <Link href="https://zestacademyonline.vercel.app/about-us" className="hover:text-primary transition-colors">
                         About Us
                     </Link>
-                    <Link href="/contact" className="hover:text-primary transition-colors">
+                    <Link href="https://zestacademyonline.vercel.app/contact" className="hover:text-primary transition-colors">
                         Contact
                     </Link>
-                    <Link href="/developers" className="hover:text-primary transition-colors">
+                    <Link href="https://zestacademyonline.vercel.app/developers" className="hover:text-primary transition-colors">
                         Developers
                     </Link>
-                    <Link href="/privacy-policy" className="hover:text-primary transition-colors">
+                    <Link href="https://zestacademyonline.vercel.app/privacy-policy" className="hover:text-primary transition-colors">
                         Privacy Policy
                     </Link>
-                    <Link href="/terms-conditions" className="hover:text-primary transition-colors">
+                    <Link href="https://zestacademyonline.vercel.app/terms-conditions" className="hover:text-primary transition-colors">
                         Terms and Conditions
                     </Link>
-                    <Link href="/cookie-policy" className="hover:text-primary transition-colors">
+                    <Link href="https://zestacademyonline.vercel.app/cookie-policy" className="hover:text-primary transition-colors">
                         Cookie Policy
                     </Link>
                 </div>
