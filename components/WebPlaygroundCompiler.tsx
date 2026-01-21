@@ -88,7 +88,7 @@ export default function WebPlaygroundCompiler() {
     const runCode = () => {
         setIsRunning(true)
         setConsoleOutput([])
-        
+
         // Create the full HTML document with CSS and JS injected
         const fullDocument = `
 <!DOCTYPE html>
@@ -151,7 +151,7 @@ export default function WebPlaygroundCompiler() {
     </script>
 </body>
 </html>`
-        
+
         setSrcDoc(fullDocument)
         setTimeout(() => setIsRunning(false), 500)
     }
@@ -175,7 +175,7 @@ export default function WebPlaygroundCompiler() {
                 setConsoleOutput(prev => [...prev, `[${timestamp}] ${prefix} ${event.data.message}`])
             }
         }
-        
+
         window.addEventListener('message', handleMessage)
         return () => window.removeEventListener('message', handleMessage)
     }, [])
@@ -185,7 +185,7 @@ export default function WebPlaygroundCompiler() {
             <div className="flex items-center justify-between bg-card p-2 rounded-lg border shadow-sm">
                 <div className="flex items-center gap-2 px-2">
                     <Code2 className="w-5 h-5 text-blue-500" />
-                    <span className="font-semibold text-lg">Web Playground</span>
+                    <span className="font-semibold text-lg hidden sm:inline">Web Playground</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <Button
@@ -195,7 +195,7 @@ export default function WebPlaygroundCompiler() {
                         title="Reset Code"
                     >
                         <RotateCcw className="w-4 h-4 mr-2" />
-                        Reset
+                        <span className="hidden sm:inline">Reset</span>
                     </Button>
                     <Button
                         onClick={runCode}
@@ -205,12 +205,12 @@ export default function WebPlaygroundCompiler() {
                         {isRunning ? (
                             <>
                                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                Running...
+                                <span className="hidden sm:inline">Running...</span>
                             </>
                         ) : (
                             <>
                                 <Play className="w-4 h-4 mr-2" />
-                                Run
+                                <span className="hidden sm:inline">Run</span>
                             </>
                         )}
                     </Button>
@@ -235,7 +235,7 @@ export default function WebPlaygroundCompiler() {
                                 JavaScript
                             </TabsTrigger>
                         </TabsList>
-                        
+
                         <TabsContent value="html" className="flex-1 m-0 min-h-0">
                             <Editor
                                 height="100%"
@@ -252,7 +252,7 @@ export default function WebPlaygroundCompiler() {
                                 }}
                             />
                         </TabsContent>
-                        
+
                         <TabsContent value="css" className="flex-1 m-0 min-h-0">
                             <Editor
                                 height="100%"
@@ -269,7 +269,7 @@ export default function WebPlaygroundCompiler() {
                                 }}
                             />
                         </TabsContent>
-                        
+
                         <TabsContent value="js" className="flex-1 m-0 min-h-0">
                             <Editor
                                 height="100%"

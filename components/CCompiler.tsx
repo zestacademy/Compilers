@@ -33,7 +33,7 @@ export default function CCompiler() {
         setOutput("")
         setCompileError("")
         setStatus("compiling")
-        
+
         const startTime = performance.now()
 
         try {
@@ -43,14 +43,14 @@ export default function CCompiler() {
             // as JDoodle implements rate limiting per API key.
             const clientId = process.env.NEXT_PUBLIC_JDOODLE_CLIENT_ID
             const clientSecret = process.env.NEXT_PUBLIC_JDOODLE_CLIENT_SECRET
-            
+
             if (!clientId || !clientSecret) {
                 setCompileError('C Compiler is not configured. Please contact the administrator to set up JDoodle API credentials.')
                 setStatus("error")
                 setIsRunning(false)
                 return
             }
-            
+
             const response = await fetch('https://api.jdoodle.com/v1/execute', {
                 method: 'POST',
                 headers: {
@@ -118,7 +118,7 @@ export default function CCompiler() {
                 <div className="flex items-center gap-4 px-2">
                     <div className="flex items-center gap-2">
                         <Code className="w-5 h-5 text-blue-500" />
-                        <span className="font-semibold text-lg">C Programming Compiler</span>
+                        <span className="font-semibold text-lg hidden sm:inline">C Programming Compiler</span>
                     </div>
                     <div className="text-sm">
                         {getStatusBadge()}
@@ -132,7 +132,7 @@ export default function CCompiler() {
                         title="Reset Code"
                     >
                         <RotateCcw className="w-4 h-4 mr-2" />
-                        Reset
+                        <span className="hidden sm:inline">Reset</span>
                     </Button>
                     <Button
                         onClick={runCode}
@@ -142,12 +142,12 @@ export default function CCompiler() {
                         {isRunning ? (
                             <>
                                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                Running...
+                                <span className="hidden sm:inline">Running...</span>
                             </>
                         ) : (
                             <>
                                 <Play className="w-4 h-4 mr-2" />
-                                Run
+                                <span className="hidden sm:inline">Run</span>
                             </>
                         )}
                     </Button>

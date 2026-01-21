@@ -68,7 +68,7 @@ export default function PythonCompiler() {
             <div className="flex items-center justify-between bg-card p-2 rounded-lg border shadow-sm">
                 <div className="flex items-center gap-2 px-2">
                     <Terminal className="w-5 h-5 text-green-500" />
-                    <span className="font-semibold text-lg">Python Playground</span>
+                    <span className="font-semibold text-lg hidden sm:inline">Python Playground</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <Button
@@ -78,7 +78,7 @@ export default function PythonCompiler() {
                         title="Reset Code"
                     >
                         <RotateCcw className="w-4 h-4 mr-2" />
-                        Reset
+                        <span className="hidden sm:inline">Reset</span>
                     </Button>
                     <Button
                         variant="outline"
@@ -87,7 +87,7 @@ export default function PythonCompiler() {
                         title="Clear Output"
                     >
                         <Trash2 className="w-4 h-4 mr-2" />
-                        Clear Out
+                        <span className="hidden sm:inline">Clear Out</span>
                     </Button>
                     <Button
                         onClick={runCode}
@@ -97,17 +97,17 @@ export default function PythonCompiler() {
                         {isLoading ? (
                             <>
                                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                Loading...
+                                <span className="hidden sm:inline">Loading...</span>
                             </>
                         ) : isRunning ? (
                             <>
                                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                Running...
+                                <span className="hidden sm:inline">Running...</span>
                             </>
                         ) : (
                             <>
                                 <Play className="w-4 h-4 mr-2" />
-                                Run
+                                <span className="hidden sm:inline">Run</span>
                             </>
                         )}
                     </Button>

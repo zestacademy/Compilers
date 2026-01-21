@@ -119,7 +119,7 @@ export default function SQLCompiler() {
         setIsRunning(true)
         setOutput([])
         setError("")
-        
+
         const startTime = performance.now()
 
         try {
@@ -129,10 +129,10 @@ export default function SQLCompiler() {
 
             for (const statement of statements) {
                 if (!statement.trim()) continue
-                
+
                 try {
                     const results = dbRef.current.exec(statement)
-                    
+
                     if (results.length > 0) {
                         lastResult = results
                     }
@@ -198,11 +198,11 @@ export default function SQLCompiler() {
             <div className="flex items-center justify-between bg-card p-2 rounded-lg border shadow-sm">
                 <div className="flex items-center gap-2 px-2">
                     <Database className="w-5 h-5 text-blue-500" />
-                    <span className="font-semibold text-lg">SQL Practice Lab</span>
+                    <span className="font-semibold text-lg hidden sm:inline">SQL Practice Lab</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <Select onValueChange={loadExample}>
-                        <SelectTrigger className="w-[200px] h-9">
+                        <SelectTrigger className="w-[130px] sm:w-[200px] h-9 text-xs sm:text-sm">
                             <SelectValue placeholder="Load Example..." />
                         </SelectTrigger>
                         <SelectContent>
@@ -221,7 +221,7 @@ export default function SQLCompiler() {
                         disabled={isLoading}
                     >
                         <RotateCcw className="w-4 h-4 mr-2" />
-                        Reset DB
+                        <span className="hidden sm:inline">Reset DB</span>
                     </Button>
                     <Button
                         onClick={runQuery}
@@ -231,17 +231,17 @@ export default function SQLCompiler() {
                         {isLoading ? (
                             <>
                                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                Loading...
+                                <span className="hidden sm:inline">Loading...</span>
                             </>
                         ) : isRunning ? (
                             <>
                                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                Running...
+                                <span className="hidden sm:inline">Running...</span>
                             </>
                         ) : (
                             <>
                                 <Play className="w-4 h-4 mr-2" />
-                                Run Query
+                                <span className="hidden sm:inline">Run Query</span>
                             </>
                         )}
                     </Button>

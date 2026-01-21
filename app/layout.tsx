@@ -20,9 +20,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
     title: "Zest Compilers - Online Coding Playground",
     description: "Practice Python, C, SQL, and Web Development instantly with our online compilers.",
-    icons: {
-        icon: "/logo.png",
-    },
+
 };
 
 export default function RootLayout({
