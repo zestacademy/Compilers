@@ -36,7 +36,7 @@ export function Navbar() {
                 : "bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
         )}>
             <div className="container flex h-16 items-center mx-auto px-4 justify-between">
-                <Link href="/" className="flex items-center space-x-2 mr-8 transition-transform hover:scale-105 duration-200">
+                <Link href="https://zestacademyonline.vercel.app/" className="flex items-center space-x-2 mr-8 transition-transform hover:scale-105 duration-200">
                     <div className="relative h-10 w-10 mr-1">
                         <Image
                             src="/logo.png"
