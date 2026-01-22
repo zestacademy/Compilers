@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import Editor from "@monaco-editor/react"
 import { Button } from "@/components/ui/button"
-import { Play, RotateCcw, Code2, Palette, FileCode, Eye, Loader2 } from "lucide-react"
+import { Play, RotateCcw, Code2, Palette, FileCode, Eye, Loader2, Trash2, Maximize2, Minimize2 } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
@@ -83,6 +83,7 @@ export default function WebPlaygroundCompiler() {
     const [srcDoc, setSrcDoc] = useState<string>("")
     const [consoleOutput, setConsoleOutput] = useState<string[]>([])
     const [isRunning, setIsRunning] = useState(false)
+    const [isPreviewMaximized, setIsPreviewMaximized] = useState(false)
     const iframeRef = useRef<HTMLIFrameElement>(null)
 
     const runCode = () => {
@@ -156,6 +157,15 @@ export default function WebPlaygroundCompiler() {
         setTimeout(() => setIsRunning(false), 500)
     }
 
+    const clearHtml = () => setHtml("")
+    const clearCss = () => setCss("")
+    const clearJs = () => setJs("")
+    const clearPreview = () => {
+        setSrcDoc("")
+        setConsoleOutput([])
+    }
+    const toggleMaximize = () => setIsPreviewMaximized(!isPreviewMaximized)
+
     const resetCode = () => {
         setHtml(DEFAULT_HTML)
         setCss(DEFAULT_CSS)
@@ -217,85 +227,165 @@ export default function WebPlaygroundCompiler() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1 min-h-0">
+            <div className={`grid gap-4 flex-1 min-h-0 ${isPreviewMaximized ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2'}`}>
                 {/* Editors Section */}
-                <Card className="flex flex-col overflow-hidden border-border h-full shadow-md">
-                    <Tabs defaultValue="html" className="flex flex-col h-full">
-                        <TabsList className="grid w-full grid-cols-3 rounded-none border-b">
-                            <TabsTrigger value="html" className="flex items-center gap-2">
-                                <FileCode className="w-4 h-4" />
-                                HTML
-                            </TabsTrigger>
-                            <TabsTrigger value="css" className="flex items-center gap-2">
-                                <Palette className="w-4 h-4" />
-                                CSS
-                            </TabsTrigger>
-                            <TabsTrigger value="js" className="flex items-center gap-2">
-                                <Code2 className="w-4 h-4" />
-                                JavaScript
-                            </TabsTrigger>
-                        </TabsList>
+                {!isPreviewMaximized && (
+                    <Card className="flex flex-col overflow-hidden border-border h-full shadow-md">
+                        <Tabs defaultValue="html" className="flex flex-col h-full">
+                            <TabsList className="grid w-full grid-cols-3 rounded-none border-b">
+                                <TabsTrigger value="html" className="flex items-center gap-2 relative group">
+                                    <FileCode className="w-4 h-4" />
+                                    HTML
+                                </TabsTrigger>
+                                <TabsTrigger value="css" className="flex items-center gap-2 relative group">
+                                    <Palette className="w-4 h-4" />
+                                    CSS
+                                </TabsTrigger>
+                                <TabsTrigger value="js" className="flex items-center gap-2 relative group">
+                                    <Code2 className="w-4 h-4" />
+                                    JavaScript
+                                </TabsTrigger>
+                            </TabsList>
 
-                        <TabsContent value="html" className="flex-1 m-0 min-h-0">
-                            <Editor
-                                height="100%"
-                                defaultLanguage="html"
-                                value={html}
-                                onChange={(value) => setHtml(value || "")}
-                                theme="vs-dark"
-                                options={{
-                                    minimap: { enabled: false },
-                                    fontSize: 14,
-                                    scrollBeyondLastLine: false,
-                                    automaticLayout: true,
-                                    padding: { top: 16 }
-                                }}
-                            />
-                        </TabsContent>
+                            <TabsContent value="html" className="flex-1 m-0 min-h-0 flex flex-col">
+                                <div className="bg-muted px-4 py-2 border-b text-xs font-mono text-muted-foreground flex justify-between items-center">
+                                    <span>index.html</span>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={clearHtml}
+                                        title="Clear HTML"
+                                        className="h-6 px-2 text-xs"
+                                    >
+                                        <Trash2 className="w-3 h-3 mr-1" />
+                                        Clear
+                                    </Button>
+                                </div>
+                                <div className="flex-1 min-h-0">
+                                    <Editor
+                                        height="100%"
+                                        defaultLanguage="html"
+                                        value={html}
+                                        onChange={(value) => setHtml(value || "")}
+                                        theme="vs-dark"
+                                        options={{
+                                            minimap: { enabled: false },
+                                            fontSize: 14,
+                                            scrollBeyondLastLine: false,
+                                            automaticLayout: true,
+                                            padding: { top: 16 }
+                                        }}
+                                    />
+                                </div>
+                            </TabsContent>
 
-                        <TabsContent value="css" className="flex-1 m-0 min-h-0">
-                            <Editor
-                                height="100%"
-                                defaultLanguage="css"
-                                value={css}
-                                onChange={(value) => setCss(value || "")}
-                                theme="vs-dark"
-                                options={{
-                                    minimap: { enabled: false },
-                                    fontSize: 14,
-                                    scrollBeyondLastLine: false,
-                                    automaticLayout: true,
-                                    padding: { top: 16 }
-                                }}
-                            />
-                        </TabsContent>
+                            <TabsContent value="css" className="flex-1 m-0 min-h-0 flex flex-col">
+                                <div className="bg-muted px-4 py-2 border-b text-xs font-mono text-muted-foreground flex justify-between items-center">
+                                    <span>styles.css</span>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={clearCss}
+                                        title="Clear CSS"
+                                        className="h-6 px-2 text-xs"
+                                    >
+                                        <Trash2 className="w-3 h-3 mr-1" />
+                                        Clear
+                                    </Button>
+                                </div>
+                                <div className="flex-1 min-h-0">
+                                    <Editor
+                                        height="100%"
+                                        defaultLanguage="css"
+                                        value={css}
+                                        onChange={(value) => setCss(value || "")}
+                                        theme="vs-dark"
+                                        options={{
+                                            minimap: { enabled: false },
+                                            fontSize: 14,
+                                            scrollBeyondLastLine: false,
+                                            automaticLayout: true,
+                                            padding: { top: 16 }
+                                        }}
+                                    />
+                                </div>
+                            </TabsContent>
 
-                        <TabsContent value="js" className="flex-1 m-0 min-h-0">
-                            <Editor
-                                height="100%"
-                                defaultLanguage="javascript"
-                                value={js}
-                                onChange={(value) => setJs(value || "")}
-                                theme="vs-dark"
-                                options={{
-                                    minimap: { enabled: false },
-                                    fontSize: 14,
-                                    scrollBeyondLastLine: false,
-                                    automaticLayout: true,
-                                    padding: { top: 16 }
-                                }}
-                            />
-                        </TabsContent>
-                    </Tabs>
-                </Card>
+                            <TabsContent value="js" className="flex-1 m-0 min-h-0 flex flex-col">
+                                <div className="bg-muted px-4 py-2 border-b text-xs font-mono text-muted-foreground flex justify-between items-center">
+                                    <span>script.js</span>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={clearJs}
+                                        title="Clear JavaScript"
+                                        className="h-6 px-2 text-xs"
+                                    >
+                                        <Trash2 className="w-3 h-3 mr-1" />
+                                        Clear
+                                    </Button>
+                                </div>
+                                <div className="flex-1 min-h-0">
+                                    <Editor
+                                        height="100%"
+                                        defaultLanguage="javascript"
+                                        value={js}
+                                        onChange={(value) => setJs(value || "")}
+                                        theme="vs-dark"
+                                        options={{
+                                            minimap: { enabled: false },
+                                            fontSize: 14,
+                                            scrollBeyondLastLine: false,
+                                            automaticLayout: true,
+                                            padding: { top: 16 }
+                                        }}
+                                    />
+                                </div>
+                            </TabsContent>
+                        </Tabs>
+                    </Card>
+                )}
 
                 {/* Preview and Console Section */}
                 <div className="flex flex-col gap-4 h-full min-h-0">
                     {/* Preview */}
-                    <Card className="flex flex-col overflow-hidden border-border flex-[2] min-h-0 shadow-md">
-                        <div className="bg-muted px-4 py-2 border-b text-xs font-mono text-muted-foreground flex items-center gap-2">
-                            <Eye className="w-4 h-4" />
-                            <span>Live Preview</span>
+                    <Card className="flex flex-col overflow-hidden border-border flex-[6] min-h-0 shadow-md">
+                        <div className="bg-muted px-4 py-2 border-b text-xs font-mono text-muted-foreground flex justify-between items-center">
+                            <div className="flex items-center gap-2">
+                                <Eye className="w-4 h-4" />
+                                <span>Live Preview</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={toggleMaximize}
+                                    title={isPreviewMaximized ? "Restore" : "Maximize"}
+                                    className="h-6 px-2 text-xs"
+                                >
+                                    {isPreviewMaximized ? (
+                                        <>
+                                            <Minimize2 className="w-3 h-3 mr-1" />
+                                            Restore
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Maximize2 className="w-3 h-3 mr-1" />
+                                            Maximize
+                                        </>
+                                    )}
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={clearPreview}
+                                    title="Clear Preview"
+                                    className="h-6 px-2 text-xs"
+                                >
+                                    <Trash2 className="w-3 h-3 mr-1" />
+                                    Clear
+                                </Button>
+                            </div>
                         </div>
                         <div className="flex-1 bg-white min-h-0">
                             {srcDoc ? (
@@ -317,31 +407,29 @@ export default function WebPlaygroundCompiler() {
                         </div>
                     </Card>
 
-                    {/* Console */}
-                    <Card className="flex flex-col overflow-hidden border-border bg-[#1e1e1e] text-white flex-1 min-h-0 shadow-md">
-                        <div className="bg-[#2d2d2d] px-4 py-2 border-b border-[#3e3e3e] text-xs font-mono text-gray-400 flex justify-between">
-                            <span>Console</span>
-                            {consoleOutput.length > 0 && (
+                    {/* Console - Only show when there's output */}
+                    {consoleOutput.length > 0 && (
+                        <Card className="flex flex-col overflow-hidden border-border bg-[#1e1e1e] text-white flex-1 min-h-0 shadow-md">
+                            <div className="bg-[#2d2d2d] px-4 py-2 border-b border-[#3e3e3e] text-xs font-mono text-gray-400 flex justify-between items-center">
+                                <span>Console</span>
                                 <Button
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => setConsoleOutput([])}
-                                    className="h-6 px-2 text-xs"
+                                    title="Clear Console"
+                                    className="h-6 px-2 text-xs hover:bg-[#3e3e3e] text-gray-400 hover:text-white"
                                 >
+                                    <Trash2 className="w-3 h-3 mr-1" />
                                     Clear
                                 </Button>
-                            )}
-                        </div>
-                        <div className="flex-1 p-4 font-mono text-xs overflow-auto whitespace-pre-wrap">
-                            {consoleOutput.length > 0 ? (
-                                consoleOutput.map((log, i) => (
+                            </div>
+                            <div className="flex-1 p-4 font-mono text-xs overflow-auto whitespace-pre-wrap">
+                                {consoleOutput.map((log, i) => (
                                     <div key={i} className="mb-1">{log}</div>
-                                ))
-                            ) : (
-                                <span className="text-gray-500 italic"># console output will appear here...</span>
-                            )}
-                        </div>
-                    </Card>
+                                ))}
+                            </div>
+                        </Card>
+                    )}
                 </div>
             </div>
         </div>
