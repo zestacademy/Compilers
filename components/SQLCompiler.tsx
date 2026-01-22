@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import Script from "next/script"
 import Editor from "@monaco-editor/react"
 import { Button } from "@/components/ui/button"
-import { Play, RotateCcw, Database, Loader2, BookOpen, Trash2 } from "lucide-react"
+import { Play, RotateCcw, Database, Loader2, BookOpen, Trash2, Maximize2, Minimize2 } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import {
     Select,
@@ -94,6 +94,7 @@ export default function SQLCompiler() {
     const [isRunning, setIsRunning] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
     const [executionTime, setExecutionTime] = useState<number>(0)
+    const [isOutputMaximized, setIsOutputMaximized] = useState(false)
     const dbRef = useRef<any>(null)
     const sqlRef = useRef<any>(null)
 
@@ -164,6 +165,13 @@ export default function SQLCompiler() {
         setCode(DEFAULT_SQL)
         await initDatabase()
     }
+
+    const clearCode = () => setCode("")
+    const clearOutput = () => {
+        setOutput([])
+        setError("")
+    }
+    const toggleMaximize = () => setIsOutputMaximized(!isOutputMaximized)
 
     const loadExample = (exampleQuery: string) => {
         setCode(exampleQuery)
@@ -248,38 +256,85 @@ export default function SQLCompiler() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1 min-h-0">
+            <div className={`grid gap-4 flex-1 min-h-0 ${isOutputMaximized ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2'}`}>
                 {/* Editor Section */}
-                <Card className="flex flex-col overflow-hidden border-border h-full shadow-md">
-                    <div className="bg-muted px-4 py-2 border-b text-xs font-mono text-muted-foreground flex justify-between">
-                        <span>query.sql</span>
-                        <span>SQLite 3.x</span>
-                    </div>
-                    <div className="flex-1 min-h-0">
-                        <Editor
-                            height="100%"
-                            defaultLanguage="sql"
-                            value={code}
-                            onChange={(value) => setCode(value || "")}
-                            theme="vs-dark"
-                            options={{
-                                minimap: { enabled: false },
-                                fontSize: 14,
-                                scrollBeyondLastLine: false,
-                                automaticLayout: true,
-                                padding: { top: 16 }
-                            }}
-                        />
-                    </div>
-                </Card>
+                {!isOutputMaximized && (
+                    <Card className="flex flex-col overflow-hidden border-border h-full shadow-md">
+                        <div className="bg-muted px-4 py-2 border-b text-xs font-mono text-muted-foreground flex justify-between items-center">
+                            <span>query.sql</span>
+                            <div className="flex items-center gap-3">
+                                <span>SQLite 3.x</span>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={clearCode}
+                                    title="Clear Query"
+                                    className="h-6 px-2 text-xs"
+                                >
+                                    <Trash2 className="w-3 h-3 mr-1" />
+                                    Clear
+                                </Button>
+                            </div>
+                        </div>
+                        <div className="flex-1 min-h-0">
+                            <Editor
+                                height="100%"
+                                defaultLanguage="sql"
+                                value={code}
+                                onChange={(value) => setCode(value || "")}
+                                theme="vs-dark"
+                                options={{
+                                    minimap: { enabled: false },
+                                    fontSize: 14,
+                                    scrollBeyondLastLine: false,
+                                    automaticLayout: true,
+                                    padding: { top: 16 }
+                                }}
+                            />
+                        </div>
+                    </Card>
+                )}
 
                 {/* Output Section */}
                 <Card className="flex flex-col overflow-hidden border-border h-full shadow-md">
-                    <div className="bg-muted px-4 py-2 border-b text-xs font-mono text-muted-foreground flex justify-between">
-                        <span>Query Results</span>
-                        {executionTime > 0 && (
-                            <span className="text-green-500">⚡ {executionTime.toFixed(2)}ms</span>
-                        )}
+                    <div className="bg-muted px-4 py-2 border-b text-xs font-mono text-muted-foreground flex justify-between items-center">
+                        <div className="flex items-center gap-3">
+                            <span>Query Results</span>
+                            {executionTime > 0 && (
+                                <span className="text-green-500">⚡ {executionTime.toFixed(2)}ms</span>
+                            )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={toggleMaximize}
+                                title={isOutputMaximized ? "Restore" : "Maximize"}
+                                className="h-6 px-2 text-xs"
+                            >
+                                {isOutputMaximized ? (
+                                    <>
+                                        <Minimize2 className="w-3 h-3 mr-1" />
+                                        Restore
+                                    </>
+                                ) : (
+                                    <>
+                                        <Maximize2 className="w-3 h-3 mr-1" />
+                                        Maximize
+                                    </>
+                                )}
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={clearOutput}
+                                title="Clear Results"
+                                className="h-6 px-2 text-xs"
+                            >
+                                <Trash2 className="w-3 h-3 mr-1" />
+                                Clear
+                            </Button>
+                        </div>
                     </div>
                     <div className="flex-1 p-4 overflow-auto bg-background">
                         {error ? (
