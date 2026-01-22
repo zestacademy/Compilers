@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import Script from "next/script"
 import Editor from "@monaco-editor/react"
 import { Button } from "@/components/ui/button"
-import { Play, RotateCcw, Loader2, Terminal, Download, Trash2 } from "lucide-react"
+import { Play, RotateCcw, Loader2, Terminal, Download, Trash2, Maximize2, Minimize2 } from "lucide-react"
 import { Card } from "@/components/ui/card"
 
 export default function PythonCompiler() {
@@ -12,6 +12,7 @@ export default function PythonCompiler() {
     const [output, setOutput] = useState<string>("")
     const [isRunning, setIsRunning] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
+    const [isOutputMaximized, setIsOutputMaximized] = useState(false)
     const pyodideRef = useRef<any>(null)
 
     // Clear output when code changes is annoying for some, so we keep it until manual clear or run
@@ -34,6 +35,10 @@ export default function PythonCompiler() {
     }
 
     const clearOutput = () => setOutput("")
+
+    const clearCode = () => setCode("")
+
+    const toggleMaximize = () => setIsOutputMaximized(!isOutputMaximized)
 
     const resetCode = () => {
         setCode("# Write your Python code here\nprint('Hello, Zest Academy!')\n\ndef fib(n):\n    if n <= 1: return n\n    return fib(n-1) + fib(n-2)\n\nprint(f'Fibonacci(10): {fib(10)}')")
@@ -80,15 +85,7 @@ export default function PythonCompiler() {
                         <RotateCcw className="w-4 h-4 mr-2" />
                         <span className="hidden sm:inline">Reset</span>
                     </Button>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={clearOutput}
-                        title="Clear Output"
-                    >
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        <span className="hidden sm:inline">Clear Out</span>
-                    </Button>
+
                     <Button
                         onClick={runCode}
                         disabled={isLoading || isRunning}
@@ -114,36 +111,83 @@ export default function PythonCompiler() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1 min-h-0">
+            <div className={`grid gap-4 flex-1 min-h-0 ${isOutputMaximized ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2'}`}>
                 {/* Editor Section */}
-                <Card className="flex flex-col overflow-hidden border-border h-full shadow-md">
-                    <div className="bg-muted px-4 py-2 border-b text-xs font-mono text-muted-foreground flex justify-between">
-                        <span>main.py</span>
-                        <span>Python 3.11 (Pyodide)</span>
-                    </div>
-                    <div className="flex-1 min-h-0">
-                        <Editor
-                            height="100%"
-                            defaultLanguage="python"
-                            value={code}
-                            onChange={(value) => setCode(value || "")}
-                            theme="vs-dark"
-                            options={{
-                                minimap: { enabled: false },
-                                fontSize: 14,
-                                scrollBeyondLastLine: false,
-                                automaticLayout: true,
-                                padding: { top: 16 }
-                            }}
-                        />
-                    </div>
-                </Card>
+                {!isOutputMaximized && (
+                    <Card className="flex flex-col overflow-hidden border-border h-full shadow-md">
+                        <div className="bg-muted px-4 py-2 border-b text-xs font-mono text-muted-foreground flex justify-between items-center">
+                            <span>main.py</span>
+                            <div className="flex items-center gap-3">
+                                <span>Python 3.11 (Pyodide)</span>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={clearCode}
+                                    title="Clear Code"
+                                    className="h-6 px-2 text-xs"
+                                >
+                                    <Trash2 className="w-3 h-3 mr-1" />
+                                    Clear
+                                </Button>
+                            </div>
+                        </div>
+                        <div className="flex-1 min-h-0">
+                            <Editor
+                                height="100%"
+                                defaultLanguage="python"
+                                value={code}
+                                onChange={(value) => setCode(value || "")}
+                                theme="vs-dark"
+                                options={{
+                                    minimap: { enabled: false },
+                                    fontSize: 14,
+                                    scrollBeyondLastLine: false,
+                                    automaticLayout: true,
+                                    padding: { top: 16 }
+                                }}
+                            />
+                        </div>
+                    </Card>
+                )}
 
                 {/* Output Section */}
                 <Card className="flex flex-col overflow-hidden border-border bg-[#1e1e1e] text-white h-full shadow-md">
-                    <div className="bg-[#2d2d2d] px-4 py-2 border-b border-[#3e3e3e] text-xs font-mono text-gray-400 flex justify-between">
-                        <span>Terminal Output</span>
-                        {isRunning && <span className="text-green-400 animate-pulse">● Executing...</span>}
+                    <div className="bg-[#2d2d2d] px-4 py-2 border-b border-[#3e3e3e] text-xs font-mono text-gray-400 flex justify-between items-center">
+                        <div className="flex items-center gap-3">
+                            <span>Terminal Output</span>
+                            {isRunning && <span className="text-green-400 animate-pulse">● Executing...</span>}
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={toggleMaximize}
+                                title={isOutputMaximized ? "Restore" : "Maximize"}
+                                className="h-6 px-2 text-xs hover:bg-[#3e3e3e] text-gray-400 hover:text-white"
+                            >
+                                {isOutputMaximized ? (
+                                    <>
+                                        <Minimize2 className="w-3 h-3 mr-1" />
+                                        Restore
+                                    </>
+                                ) : (
+                                    <>
+                                        <Maximize2 className="w-3 h-3 mr-1" />
+                                        Maximize
+                                    </>
+                                )}
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={clearOutput}
+                                title="Clear Terminal Output"
+                                className="h-6 px-2 text-xs hover:bg-[#3e3e3e] text-gray-400 hover:text-white"
+                            >
+                                <Trash2 className="w-3 h-3 mr-1" />
+                                Clear
+                            </Button>
+                        </div>
                     </div>
                     <div className="flex-1 p-4 font-mono text-sm overflow-auto whitespace-pre-wrap">
                         {output ? output : <span className="text-gray-500 italic"># output will appear here...</span>}
