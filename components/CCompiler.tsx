@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Editor from "@monaco-editor/react"
 import { Button } from "@/components/ui/button"
-import { Play, RotateCcw, Code, Loader2, Terminal, Clock, MemoryStick } from "lucide-react"
+import { Play, RotateCcw, Code, Loader2, Terminal, Clock, MemoryStick, Trash2, Maximize2, Minimize2 } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 
@@ -27,6 +27,7 @@ export default function CCompiler() {
     const [isRunning, setIsRunning] = useState(false)
     const [executionTime, setExecutionTime] = useState<number>(0)
     const [status, setStatus] = useState<"idle" | "compiling" | "running" | "success" | "error">("idle")
+    const [isOutputMaximized, setIsOutputMaximized] = useState(false)
 
     const runCode = async () => {
         setIsRunning(true)
@@ -87,6 +88,14 @@ export default function CCompiler() {
             setIsRunning(false)
         }
     }
+
+    const clearCode = () => setCode("")
+    const clearInput = () => setInput("")
+    const clearOutput = () => {
+        setOutput("")
+        setCompileError("")
+    }
+    const toggleMaximize = () => setIsOutputMaximized(!isOutputMaximized)
 
     const resetCode = () => {
         setCode(DEFAULT_CODE)
@@ -154,47 +163,71 @@ export default function CCompiler() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1 min-h-0">
+            <div className={`grid gap-4 flex-1 min-h-0 ${isOutputMaximized ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2'}`}>
                 {/* Editor Section */}
-                <div className="flex flex-col gap-4 h-full min-h-0">
-                    <Card className="flex flex-col overflow-hidden border-border flex-[3] shadow-md">
-                        <div className="bg-muted px-4 py-2 border-b text-xs font-mono text-muted-foreground flex justify-between">
-                            <span>main.c</span>
-                            <span>GCC 9.1.0</span>
-                        </div>
-                        <div className="flex-1 min-h-0">
-                            <Editor
-                                height="100%"
-                                defaultLanguage="c"
-                                value={code}
-                                onChange={(value) => setCode(value || "")}
-                                theme="vs-dark"
-                                options={{
-                                    minimap: { enabled: false },
-                                    fontSize: 14,
-                                    scrollBeyondLastLine: false,
-                                    automaticLayout: true,
-                                    padding: { top: 16 }
-                                }}
-                            />
-                        </div>
-                    </Card>
+                {!isOutputMaximized && (
+                    <div className="flex flex-col gap-4 h-full min-h-0">
+                        <Card className="flex flex-col overflow-hidden border-border flex-[3] shadow-md">
+                            <div className="bg-muted px-4 py-2 border-b text-xs font-mono text-muted-foreground flex justify-between items-center">
+                                <span>main.c</span>
+                                <div className="flex items-center gap-3">
+                                    <span>GCC 9.1.0</span>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={clearCode}
+                                        title="Clear Code"
+                                        className="h-6 px-2 text-xs"
+                                    >
+                                        <Trash2 className="w-3 h-3 mr-1" />
+                                        Clear
+                                    </Button>
+                                </div>
+                            </div>
+                            <div className="flex-1 min-h-0">
+                                <Editor
+                                    height="100%"
+                                    defaultLanguage="c"
+                                    value={code}
+                                    onChange={(value) => setCode(value || "")}
+                                    theme="vs-dark"
+                                    options={{
+                                        minimap: { enabled: false },
+                                        fontSize: 14,
+                                        scrollBeyondLastLine: false,
+                                        automaticLayout: true,
+                                        padding: { top: 16 }
+                                    }}
+                                />
+                            </div>
+                        </Card>
 
-                    {/* Input Section */}
-                    <Card className="flex flex-col overflow-hidden border-border flex-1 shadow-md">
-                        <div className="bg-muted px-4 py-2 border-b text-xs font-mono text-muted-foreground">
-                            <span>Standard Input (stdin)</span>
-                        </div>
-                        <div className="flex-1 p-4">
-                            <Textarea
-                                placeholder="Enter input here (if your program uses scanf, gets, etc.)"
-                                value={input}
-                                onChange={(e) => setInput(e.target.value)}
-                                className="w-full h-full resize-none font-mono text-sm"
-                            />
-                        </div>
-                    </Card>
-                </div>
+                        {/* Input Section */}
+                        <Card className="flex flex-col overflow-hidden border-border flex-1 shadow-md">
+                            <div className="bg-muted px-4 py-2 border-b text-xs font-mono text-muted-foreground flex justify-between items-center">
+                                <span>Standard Input (stdin)</span>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={clearInput}
+                                    title="Clear Input"
+                                    className="h-6 px-2 text-xs"
+                                >
+                                    <Trash2 className="w-3 h-3 mr-1" />
+                                    Clear
+                                </Button>
+                            </div>
+                            <div className="flex-1 p-4">
+                                <Textarea
+                                    placeholder="Enter input here (if your program uses scanf, gets, etc.)"
+                                    value={input}
+                                    onChange={(e) => setInput(e.target.value)}
+                                    className="w-full h-full resize-none font-mono text-sm"
+                                />
+                            </div>
+                        </Card>
+                    </div>
+                )}
 
                 {/* Output Section */}
                 <div className="flex flex-col gap-4 h-full min-h-0">
@@ -216,15 +249,44 @@ export default function CCompiler() {
                             <div className="flex items-center gap-2">
                                 <Terminal className="w-4 h-4" />
                                 <span>Program Output</span>
-                            </div>
-                            {executionTime > 0 && (
-                                <div className="flex items-center gap-3">
+                                {executionTime > 0 && (
                                     <span className="flex items-center gap-1 text-green-400">
                                         <Clock className="w-3 h-3" />
                                         {executionTime.toFixed(0)}ms
                                     </span>
-                                </div>
-                            )}
+                                )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={toggleMaximize}
+                                    title={isOutputMaximized ? "Restore" : "Maximize"}
+                                    className="h-6 px-2 text-xs hover:bg-[#3e3e3e] text-gray-400 hover:text-white"
+                                >
+                                    {isOutputMaximized ? (
+                                        <>
+                                            <Minimize2 className="w-3 h-3 mr-1" />
+                                            Restore
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Maximize2 className="w-3 h-3 mr-1" />
+                                            Maximize
+                                        </>
+                                    )}
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={clearOutput}
+                                    title="Clear Output"
+                                    className="h-6 px-2 text-xs hover:bg-[#3e3e3e] text-gray-400 hover:text-white"
+                                >
+                                    <Trash2 className="w-3 h-3 mr-1" />
+                                    Clear
+                                </Button>
+                            </div>
                         </div>
                         <div className="flex-1 p-4 font-mono text-sm overflow-auto whitespace-pre-wrap">
                             {output ? output : <span className="text-gray-500 italic"># program output will appear here...</span>}
