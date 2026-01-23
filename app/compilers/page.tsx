@@ -2,7 +2,7 @@
 
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { MessageSquare, Code, Terminal, ArrowRight } from "lucide-react"
-import { useRouter } from "next/navigation"
+import Link from "next/link"
 
 const COMPILERS = [
     {
@@ -40,7 +40,7 @@ const COMPILERS = [
 ]
 
 export default function CompilersPage() {
-    const router = useRouter()
+
 
     return (
         <div className="min-h-screen bg-background py-12">
@@ -52,24 +52,26 @@ export default function CompilersPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {COMPILERS.map((compiler) => (
-                        <Card key={compiler.id} className="hover:border-primary/50 transition-all cursor-pointer group" onClick={() => router.push(`/compilers/${compiler.id}`)}>
-                            <CardHeader>
-                                <div className="flex items-start gap-4">
-                                    <div className={`p-3 rounded-lg ${compiler.bg}`}>
-                                        <compiler.icon className={`h-6 w-6 ${compiler.color}`} />
+                        <Link key={compiler.id} href={`/compilers/${compiler.id}`} className="block">
+                            <Card className="hover:border-primary/50 transition-all group h-full">
+                                <CardHeader>
+                                    <div className="flex items-start gap-4">
+                                        <div className={`p-3 rounded-lg ${compiler.bg}`}>
+                                            <compiler.icon className={`h-6 w-6 ${compiler.color}`} />
+                                        </div>
+                                        <div className="flex-1">
+                                            <CardTitle className="text-xl mb-2 flex items-center justify-between">
+                                                {compiler.title}
+                                                <ArrowRight className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity text-primary" />
+                                            </CardTitle>
+                                            <CardDescription className="text-md">
+                                                {compiler.description}
+                                            </CardDescription>
+                                        </div>
                                     </div>
-                                    <div className="flex-1">
-                                        <CardTitle className="text-xl mb-2 flex items-center justify-between">
-                                            {compiler.title}
-                                            <ArrowRight className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity text-primary" />
-                                        </CardTitle>
-                                        <CardDescription className="text-md">
-                                            {compiler.description}
-                                        </CardDescription>
-                                    </div>
-                                </div>
-                            </CardHeader>
-                        </Card>
+                                </CardHeader>
+                            </Card>
+                        </Link>
                     ))}
                 </div>
             </div>
