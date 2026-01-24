@@ -35,5 +35,27 @@ export default function CLayout({
 }: {
     children: React.ReactNode;
 }) {
-    return <>{children}</>;
+    return (
+        <>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify({
+                        "@context": "https://schema.org",
+                        "@type": "SoftwareApplication",
+                        "name": "Online C Compiler",
+                        "applicationCategory": "DeveloperTool",
+                        "operatingSystem": "Any",
+                        "offers": {
+                            "@type": "Offer",
+                            "price": "0",
+                            "priceCurrency": "USD"
+                        },
+                        "description": "Free online C compiler and IDE. Write, compile, and run C programming code directly in your browser."
+                    })
+                }}
+            />
+            {children}
+        </>
+    );
 }

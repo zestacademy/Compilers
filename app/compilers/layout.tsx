@@ -19,5 +19,44 @@ export default function CompilersLayout({
 }: {
     children: React.ReactNode;
 }) {
-    return <>{children}</>;
+    return (
+        <>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify({
+                        "@context": "https://schema.org",
+                        "@type": "ItemList",
+                        "itemListElement": [
+                            {
+                                "@type": "ListItem",
+                                "position": 1,
+                                "name": "Python Compiler",
+                                "url": "https://zestcompilers.vercel.app/compilers/python"
+                            },
+                            {
+                                "@type": "ListItem",
+                                "position": 2,
+                                "name": "Web Playground",
+                                "url": "https://zestcompilers.vercel.app/compilers/web"
+                            },
+                            {
+                                "@type": "ListItem",
+                                "position": 3,
+                                "name": "SQL Practice Lab",
+                                "url": "https://zestcompilers.vercel.app/compilers/sql"
+                            },
+                            {
+                                "@type": "ListItem",
+                                "position": 4,
+                                "name": "C Programming Compiler",
+                                "url": "https://zestcompilers.vercel.app/compilers/c"
+                            }
+                        ]
+                    })
+                }}
+            />
+            {children}
+        </>
+    );
 }

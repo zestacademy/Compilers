@@ -35,5 +35,27 @@ export default function PythonLayout({
 }: {
     children: React.ReactNode;
 }) {
-    return <>{children}</>;
+    return (
+        <>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify({
+                        "@context": "https://schema.org",
+                        "@type": "SoftwareApplication",
+                        "name": "Online Python Compiler",
+                        "applicationCategory": "DeveloperTool",
+                        "operatingSystem": "Any",
+                        "offers": {
+                            "@type": "Offer",
+                            "price": "0",
+                            "priceCurrency": "USD"
+                        },
+                        "description": "Free online Python compiler and IDE. Write, run, and share Python code directly in your browser."
+                    })
+                }}
+            />
+            {children}
+        </>
+    );
 }

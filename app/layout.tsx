@@ -108,6 +108,22 @@ export default function RootLayout({
                         <Footer />
                     </ToastProvider>
                 </ThemeProvider>
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{
+                        __html: JSON.stringify({
+                            "@context": "https://schema.org",
+                            "@type": "WebSite",
+                            "name": "Zest Compilers",
+                            "url": "https://zestcompilers.vercel.app",
+                            "potentialAction": {
+                                "@type": "SearchAction",
+                                "target": "https://zestcompilers.vercel.app/search?q={search_term_string}",
+                                "query-input": "required name=search_term_string"
+                            }
+                        })
+                    }}
+                />
             </body>
         </html>
     );
