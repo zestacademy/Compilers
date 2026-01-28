@@ -2,7 +2,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## 🔧 Configuration Required
 
-This project includes multiple online compilers that require API credentials to function:
+This project includes multiple online compilers and features that require API credentials to function:
 
 ### 1. JDoodle API (for C and Java Compilers)
 
@@ -18,7 +18,16 @@ This project includes multiple online compilers that require API credentials to 
 3. Click "Create API Key"
 4. Copy your API key
 
-### 3. Setup Environment Variables
+### 3. Firebase (for User Authentication and Database)
+
+1. Visit [Firebase Console](https://console.firebase.google.com/)
+2. Create a new project or select an existing one
+3. Go to **Project Settings** > **General**
+4. Scroll down to **"Your apps"** section
+5. Click on the web app icon (</>) or create a new web app
+6. Copy all the configuration values (apiKey, authDomain, projectId, etc.)
+
+### 4. Setup Environment Variables
 
 1. Copy `.env.example` to `.env.local`:
    ```bash
@@ -27,9 +36,21 @@ This project includes multiple online compilers that require API credentials to 
 
 2. Edit `.env.local` and add your credentials:
    ```env
+   # JDoodle API
    JDOODLE_CLIENT_ID=your_actual_client_id
    JDOODLE_CLIENT_SECRET=your_actual_client_secret
+   
+   # Google Gemini API
    GEMINI_API_KEY=your_actual_gemini_api_key
+   
+   # Firebase Configuration
+   NEXT_PUBLIC_FIREBASE_API_KEY=your_actual_firebase_api_key
+   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project-id.firebaseapp.com
+   NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_actual_project_id
+   NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project-id.appspot.com
+   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_actual_sender_id
+   NEXT_PUBLIC_FIREBASE_APP_ID=your_actual_app_id
+   NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your_actual_measurement_id
    ```
 
 3. Restart your development server
@@ -37,6 +58,7 @@ This project includes multiple online compilers that require API credentials to 
 **Note:** 
 - The Python compiler will work without API keys (uses Pyodide in browser), but the "Explain" feature requires Gemini API. 
 - The C and Java compilers require JDoodle API to function.
+- Firebase is required for user authentication and data persistence.
 - All API calls are made server-side for security (credentials are never exposed to the browser).
 
 ## Getting Started
