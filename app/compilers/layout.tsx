@@ -51,6 +51,12 @@ export default function CompilersLayout({
                                 "position": 4,
                                 "name": "C Programming Compiler",
                                 "url": "https://zestcompilers.vercel.app/compilers/c"
+                            },
+                            {
+                                "@type": "ListItem",
+                                "position": 5,
+                                "name": "Java Compiler",
+                                "url": "https://zestcompilers.vercel.app/compilers/java"
                             }
                         ]
                     })

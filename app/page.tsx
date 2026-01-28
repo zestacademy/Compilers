@@ -36,6 +36,14 @@ const COMPILERS = [
         icon: Terminal,
         color: "text-emerald-500",
         bg: "bg-emerald-100 dark:bg-emerald-900/20"
+    },
+    {
+        id: "java",
+        title: "Java Compiler",
+        description: "Write and run Java code instantly with JDK 17 support.",
+        icon: Terminal,
+        color: "text-orange-500",
+        bg: "bg-orange-100 dark:bg-orange-900/20"
     }
 ]
 

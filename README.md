@@ -1,5 +1,44 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## 🔧 Configuration Required
+
+This project includes multiple online compilers that require API credentials to function:
+
+### 1. JDoodle API (for C and Java Compilers)
+
+1. Visit [JDoodle Compiler API](https://www.jdoodle.com/compiler-api)
+2. Sign up for a free account
+3. Get your **Client ID** and **Client Secret**
+4. Free tier includes: **200 credits/day** (sufficient for testing)
+
+### 2. Google Gemini API (for Python Compiler's Explain Feature)
+
+1. Visit [Google AI Studio](https://aistudio.google.com/app/apikey)
+2. Sign in with your Google account
+3. Click "Create API Key"
+4. Copy your API key
+
+### 3. Setup Environment Variables
+
+1. Copy `.env.example` to `.env.local`:
+   ```bash
+   cp .env.example .env.local
+   ```
+
+2. Edit `.env.local` and add your credentials:
+   ```env
+   JDOODLE_CLIENT_ID=your_actual_client_id
+   JDOODLE_CLIENT_SECRET=your_actual_client_secret
+   GEMINI_API_KEY=your_actual_gemini_api_key
+   ```
+
+3. Restart your development server
+
+**Note:** 
+- The Python compiler will work without API keys (uses Pyodide in browser), but the "Explain" feature requires Gemini API. 
+- The C and Java compilers require JDoodle API to function.
+- All API calls are made server-side for security (credentials are never exposed to the browser).
+
 ## Getting Started
 
 First, run the development server:

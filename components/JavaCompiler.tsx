@@ -3,23 +3,21 @@
 import { useState } from "react"
 import Editor from "@monaco-editor/react"
 import { Button } from "@/components/ui/button"
-import { Play, RotateCcw, Code, Loader2, Terminal, Clock, MemoryStick, Trash2, Maximize2, Minimize2 } from "lucide-react"
+import { Play, RotateCcw, Code, Loader2, Terminal, Clock, Coffee, Trash2, Maximize2, Minimize2 } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 
-const DEFAULT_CODE = `#include <stdio.h>
-
-int main() {
-    printf("Hello, World!\\n");
-    printf("Welcome to C Programming Compiler!\\n");
-    
-    int a = 10, b = 20;
-    printf("Sum of %d and %d is %d\\n", a, b, a + b);
-    
-    return 0;
+const DEFAULT_CODE = `public class Main {
+    public static void main(String[] args) {
+        System.out.println("Hello, World!");
+        System.out.println("Welcome to Java Compiler!");
+        
+        int a = 10, b = 20;
+        System.out.println("Sum of " + a + " and " + b + " is " + (a + b));
+    }
 }`
 
-export default function CCompiler() {
+export default function JavaCompiler() {
     const [code, setCode] = useState<string>(DEFAULT_CODE)
     const [input, setInput] = useState<string>("")
     const [output, setOutput] = useState<string>("")
@@ -47,8 +45,8 @@ export default function CCompiler() {
                 body: JSON.stringify({
                     code: code,
                     stdin: input,
-                    language: 'c',
-                    versionIndex: '5', // GCC 9.1.0
+                    language: 'java',
+                    versionIndex: '4', // JDK 17.0.20
                 })
             })
 
@@ -59,8 +57,10 @@ export default function CCompiler() {
             if (result.error) {
                 setCompileError(result.error)
                 setStatus("error")
-            } else if (result.compilationStatus === "failed" || result.statusCode === 11) {
-                setCompileError(result.output || "Compilation failed")
+            } else if (result.compilationStatus === "failed" || (result.statusCode && result.statusCode !== 200)) {
+                // JDoodle sometimes returns statusCode 200 even if there is a runtime error, checking output usually helps
+                // But check specifically for compilation failure
+                setCompileError(result.output || "Compilation/Execution failed")
                 setStatus("error")
             } else {
                 setOutput(result.output || "(no output)")
@@ -111,8 +111,8 @@ export default function CCompiler() {
             <div className="flex items-center justify-between bg-card p-2 rounded-lg border shadow-sm">
                 <div className="flex items-center gap-4 px-2">
                     <div className="flex items-center gap-2">
-                        <Code className="w-5 h-5 text-blue-500" />
-                        <span className="font-semibold text-lg hidden sm:inline">C Programming Compiler</span>
+                        <Coffee className="w-5 h-5 text-orange-500" />
+                        <span className="font-semibold text-lg hidden sm:inline">Java Compiler</span>
                     </div>
                     <div className="text-sm">
                         {getStatusBadge()}
@@ -154,9 +154,9 @@ export default function CCompiler() {
                     <div className="flex flex-col gap-4 h-full min-h-0">
                         <Card className="flex flex-col overflow-hidden border-border flex-[3] shadow-md">
                             <div className="bg-muted px-4 py-2 border-b text-xs font-mono text-muted-foreground flex justify-between items-center">
-                                <span>main.c</span>
+                                <span>Main.java</span>
                                 <div className="flex items-center gap-3">
-                                    <span>GCC 9.1.0</span>
+                                    <span>JDK 17.0.20</span>
                                     <Button
                                         variant="ghost"
                                         size="sm"
@@ -172,7 +172,7 @@ export default function CCompiler() {
                             <div className="flex-1 min-h-0">
                                 <Editor
                                     height="100%"
-                                    defaultLanguage="c"
+                                    defaultLanguage="java"
                                     value={code}
                                     onChange={(value) => setCode(value || "")}
                                     theme="vs-dark"
@@ -204,7 +204,7 @@ export default function CCompiler() {
                             </div>
                             <div className="flex-1 p-4">
                                 <Textarea
-                                    placeholder="Enter input here (if your program uses scanf, gets, etc.)"
+                                    placeholder="Enter input here (if your program uses Scanner, System.in, etc.)"
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}
                                     className="w-full h-full resize-none font-mono text-sm"
@@ -279,13 +279,13 @@ export default function CCompiler() {
                     </Card>
 
                     {/* Tips Card */}
-                    <Card className="p-4 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
-                        <h3 className="font-semibold text-sm mb-2 text-blue-700 dark:text-blue-400">💡 Tips:</h3>
-                        <ul className="text-xs space-y-1 text-blue-600 dark:text-blue-300">
-                            <li>• Don't forget semicolons at the end of statements</li>
-                            <li>• Check that main() has the correct signature</li>
-                            <li>• Use printf() for output, scanf() for input</li>
-                            <li>• Remember to include necessary headers</li>
+                    <Card className="p-4 bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-800">
+                        <h3 className="font-semibold text-sm mb-2 text-orange-700 dark:text-orange-400">💡 Tips:</h3>
+                        <ul className="text-xs space-y-1 text-orange-600 dark:text-orange-300">
+                            <li>• Class name must be 'Main' (public class Main)</li>
+                            <li>• Don't forget 'public static void main(String[] args)'</li>
+                            <li>• Use System.out.println() for output</li>
+                            <li>• Scanner or BufferedReader works with Standard Input box</li>
                         </ul>
                     </Card>
                 </div>
