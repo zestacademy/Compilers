@@ -32,31 +32,31 @@ export default function CompilersLayout({
                                 "@type": "ListItem",
                                 "position": 1,
                                 "name": "Python Compiler",
-                                "url": "https://zestcompilers.vercel.app/compilers/python"
+                                "url": "https://compilers.zestacademy.tech/compilers/python"
                             },
                             {
                                 "@type": "ListItem",
                                 "position": 2,
                                 "name": "Web Playground",
-                                "url": "https://zestcompilers.vercel.app/compilers/web"
+                                "url": "https://compilers.zestacademy.tech/compilers/web"
                             },
                             {
                                 "@type": "ListItem",
                                 "position": 3,
                                 "name": "SQL Practice Lab",
-                                "url": "https://zestcompilers.vercel.app/compilers/sql"
+                                "url": "https://compilers.zestacademy.tech/compilers/sql"
                             },
                             {
                                 "@type": "ListItem",
                                 "position": 4,
                                 "name": "C Programming Compiler",
-                                "url": "https://zestcompilers.vercel.app/compilers/c"
+                                "url": "https://compilers.zestacademy.tech/compilers/c"
                             },
                             {
                                 "@type": "ListItem",
                                 "position": 5,
                                 "name": "Java Compiler",
-                                "url": "https://zestcompilers.vercel.app/compilers/java"
+                                "url": "https://compilers.zestacademy.tech/compilers/java"
                             }
                         ]
                     })

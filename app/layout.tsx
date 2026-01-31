@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-    metadataBase: new URL("https://zestcompilers.vercel.app"),
+    metadataBase: new URL("https://compilers.zestacademy.tech"),
     title: {
         default: "Zest Compilers - Online Coding Playground",
         template: "%s | Zest Compilers",
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     openGraph: {
         type: "website",
         locale: "en_US",
-        url: "https://zestcompilers.vercel.app",
+        url: "https://compilers.zestacademy.tech",
         title: "Zest Compilers - Online Coding Playground",
         description:
             "Practice Python, C, SQL, and Web Development instantly with our free online compilers.",
@@ -115,10 +115,10 @@ export default function RootLayout({
                             "@context": "https://schema.org",
                             "@type": "WebSite",
                             "name": "Zest Compilers",
-                            "url": "https://zestcompilers.vercel.app",
+                            "url": "https://compilers.zestacademy.tech",
                             "potentialAction": {
                                 "@type": "SearchAction",
-                                "target": "https://zestcompilers.vercel.app/search?q={search_term_string}",
+                                "target": "https://compilers.zestacademy.tech/search?q={search_term_string}",
                                 "query-input": "required name=search_term_string"
                             }
                         })

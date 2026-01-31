@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
             allow: '/',
             disallow: '/private/',
         },
-        sitemap: 'https://zestcompilers.vercel.app/sitemap.xml',
+        sitemap: 'https://compilers.zestacademy.tech/sitemap.xml',
     }
 }
