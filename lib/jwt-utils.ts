@@ -40,7 +40,21 @@ export function decodeJWT(token: string): JWTPayload | null {
 
 /**
  * Validate JWT token
- * Checks: signature (placeholder), expiry, issuer, and audience
+ * Checks: signature (TODO), expiry, issuer, and audience
+ * 
+ * SECURITY NOTE: This implementation does NOT verify the JWT signature.
+ * For production use, implement signature verification using the auth server's public key.
+ * 
+ * Recommended approach:
+ * 1. Fetch JWKS from auth server: GET ${authServerUrl}/.well-known/jwks.json
+ * 2. Use a library like 'jose' to verify signature: await jwtVerify(token, jwks)
+ * 3. Cache JWKS for performance
+ * 
+ * Current security relies on:
+ * - HTTPS transport encryption
+ * - HTTP-only cookie protection
+ * - Server-side token exchange
+ * - Controlled environment (auth server trust)
  */
 export function validateJWT(token: string): { valid: boolean; payload?: JWTPayload; error?: string } {
     try {
@@ -69,9 +83,13 @@ export function validateJWT(token: string): { valid: boolean; payload?: JWTPaylo
             return { valid: false, error: 'Invalid audience' };
         }
         
-        // TODO: Validate signature using public key from auth server
-        // This would typically involve fetching the JWKS from auth server
-        // and verifying the signature using the appropriate algorithm
+        // TODO: Implement signature verification
+        // Without signature verification, tokens could be forged by clients with access to the secret.
+        // This is acceptable in a trusted environment but must be implemented for production.
+        // Example implementation:
+        // const jwks = await fetch(`${OAUTH_CONFIG.authServerUrl}/.well-known/jwks.json`)
+        // const key = await importJWK(jwks.keys[0])
+        // const { payload: verifiedPayload } = await jwtVerify(token, key)
         
         return { valid: true, payload };
     } catch (error) {

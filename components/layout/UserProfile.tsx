@@ -84,7 +84,7 @@ export function UserProfile() {
             .join("")
             .toUpperCase()
             .slice(0, 2)
-        : user.email?.charAt(0).toUpperCase() || "U"
+        : user.email.charAt(0).toUpperCase()
 
     return (
         <DropdownMenu>

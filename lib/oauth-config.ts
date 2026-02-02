@@ -3,13 +3,21 @@
  * Central authentication server: auth.zestacademy.tech
  */
 
+// Validate critical environment variables in production
+function validateEnvVar(name: string, value: string | undefined): string {
+    if (!value && process.env.NODE_ENV === 'production') {
+        throw new Error(`Missing required environment variable: ${name}`);
+    }
+    return value || '';
+}
+
 export const OAUTH_CONFIG = {
     // Auth server base URL
     authServerUrl: process.env.NEXT_PUBLIC_AUTH_SERVER_URL || 'https://auth.zestacademy.tech',
     
     // Client credentials
     clientId: process.env.NEXT_PUBLIC_OAUTH_CLIENT_ID || 'zestcompilers',
-    clientSecret: process.env.OAUTH_CLIENT_SECRET || '',
+    clientSecret: validateEnvVar('OAUTH_CLIENT_SECRET', process.env.OAUTH_CLIENT_SECRET),
     
     // OAuth endpoints
     authorizationEndpoint: '/authorize',
@@ -24,10 +32,10 @@ export const OAUTH_CONFIG = {
     responseType: 'code',
     
     // JWT validation
-    jwtSecret: process.env.JWT_SECRET || '',
+    jwtSecret: validateEnvVar('JWT_SECRET', process.env.JWT_SECRET),
     
     // Cookie configuration
-    cookieSecret: process.env.COOKIE_SECRET || '',
+    cookieSecret: validateEnvVar('COOKIE_SECRET', process.env.COOKIE_SECRET),
     cookieName: 'zest_access_token',
     cookieOptions: {
         httpOnly: true,
