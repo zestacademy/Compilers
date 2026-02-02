@@ -8,7 +8,13 @@ import { OAUTH_CONFIG } from './oauth-config';
 /**
  * Simple cookie serializer
  */
-function serializeCookie(name: string, value: string, options: any): string {
+function serializeCookie(name: string, value: string, options: {
+    maxAge?: number;
+    path?: string;
+    httpOnly?: boolean;
+    secure?: boolean;
+    sameSite?: 'strict' | 'lax' | 'none';
+}): string {
     let cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}`;
     
     if (options.maxAge) {

@@ -3,11 +3,11 @@
  * Redirects users to auth.zestacademy.tech for authentication
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { generateAuthUrl, generateState } from '@/lib/oauth-config';
 import { setStateCookie } from '@/lib/cookie-utils';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
     try {
         // Generate CSRF state token
         const state = generateState();
