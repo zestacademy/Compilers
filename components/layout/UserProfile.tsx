@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { User, onAuthStateChanged, signOut } from "firebase/auth"
-import { auth } from "@/lib/firebase"
 import { LogOut, User as UserIcon, Settings } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -19,23 +17,44 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
+interface SSOUser {
+    id: string
+    email: string
+    name?: string
+    picture?: string
+}
+
 export function UserProfile() {
     const router = useRouter()
-    const [user, setUser] = useState<User | null>(null)
+    const [user, setUser] = useState<SSOUser | null>(null)
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-            setUser(currentUser)
-            setLoading(false)
-        })
-        return () => unsubscribe()
+        // Fetch current user from SSO
+        const fetchUser = async () => {
+            try {
+                const response = await fetch('/api/auth/me')
+                if (response.ok) {
+                    const data = await response.json()
+                    setUser(data.user)
+                } else {
+                    setUser(null)
+                }
+            } catch (error) {
+                console.error("Error fetching user:", error)
+                setUser(null)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchUser()
     }, [])
 
     const handleSignOut = async () => {
         try {
-            await signOut(auth)
-            router.push("/login")
+            // Redirect to logout endpoint with global logout
+            router.push("/api/auth/logout?global=true")
         } catch (error) {
             console.error("Error signing out:", error)
         }
@@ -48,14 +67,9 @@ export function UserProfile() {
     if (!user) {
         return (
             <div className="flex items-center gap-2">
-                <Link href="/login">
-                    <Button variant="ghost" size="sm" className="hidden sm:inline-flex">
-                        Log In
-                    </Button>
-                </Link>
-                <Link href="/register">
+                <Link href="/api/auth/login">
                     <Button size="sm" className="bg-primary hover:bg-primary/90 text-white font-semibold shadow-sm">
-                        Sign Up
+                        Login with ZestAcademy
                     </Button>
                 </Link>
             </div>
@@ -63,21 +77,21 @@ export function UserProfile() {
     }
 
     // Get initials for avatar fallback
-    const initials = user.displayName
-        ? user.displayName
+    const initials = user.name
+        ? user.name
             .split(" ")
             .map((n) => n[0])
             .join("")
             .toUpperCase()
             .slice(0, 2)
-        : "U"
+        : user.email?.charAt(0).toUpperCase() || "U"
 
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-9 w-9 rounded-full">
                     <Avatar className="h-9 w-9">
-                        <AvatarImage src={user.photoURL || ""} alt={user.displayName || ""} />
+                        <AvatarImage src={user.picture || ""} alt={user.name || ""} />
                         <AvatarFallback>{initials}</AvatarFallback>
                     </Avatar>
                 </Button>
@@ -85,7 +99,7 @@ export function UserProfile() {
             <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{user.displayName || "User"}</p>
+                        <p className="text-sm font-medium leading-none">{user.name || "User"}</p>
                         <p className="text-xs leading-none text-muted-foreground">
                             {user.email}
                         </p>
