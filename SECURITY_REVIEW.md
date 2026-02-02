@@ -86,11 +86,18 @@ validateJWT(token: string) {
 - Client secret server-side only
 - JWT/Cookie secrets never exposed
 - Environment-specific configuration
+- Lazy validation to allow builds without secrets
 
 **Server-side only** (not prefixed with `NEXT_PUBLIC_`):
 - `OAUTH_CLIENT_SECRET`
 - `JWT_SECRET`
 - `COOKIE_SECRET`
+
+**Validation Strategy**:
+- Uses lazy getters to validate at runtime, not build time
+- Allows builds to succeed without environment variables set
+- Validates in production when values are actually accessed
+- Provides clear error messages if missing in production
 
 ### 6. Global Logout Support
 
