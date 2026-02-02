@@ -14,6 +14,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
+import { UserProfile } from "./UserProfile"
 
 export function Navbar() {
     const { setTheme } = useTheme()
@@ -54,6 +55,7 @@ export function Navbar() {
                 <div className="flex-1" />
 
                 <div className="flex items-center space-x-4">
+                    <UserProfile />
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="ml-1">
