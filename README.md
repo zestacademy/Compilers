@@ -41,7 +41,9 @@ COOKIE_SECRET=your_cookie_encryption_secret
 - ✅ JWT validation (expiry, issuer, audience)
 - 🌐 Global logout support across all platforms
 
-📖 **For detailed SSO implementation guide, see [SSO_IMPLEMENTATION.md](./SSO_IMPLEMENTATION.md)**
+📖 **Implementation Guides**:
+- [SSO_IMPLEMENTATION.md](./SSO_IMPLEMENTATION.md) - Current server-side OAuth implementation
+- [OAUTH_CLIENT_INTEGRATION.md](./OAUTH_CLIENT_INTEGRATION.md) - OAuth 2.0 with PKCE client integration guide
 
 ### 4. Firebase (Legacy - for Database Only)
 
