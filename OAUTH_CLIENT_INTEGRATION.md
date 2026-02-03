@@ -36,11 +36,21 @@ Create `lib/oauth.ts` or `utils/oauth.ts` in your client application:
 import pkceChallenge from 'pkce-challenge'
 
 const AUTH_SERVER_URL = process.env.NEXT_PUBLIC_AUTH_URL || 'https://auth.zestacademy.tech'
-const CLIENT_ID = process.env.NEXT_PUBLIC_OAUTH_CLIENT_ID // e.g., 'zest_academy'
-const REDIRECT_URI = process.env.NEXT_PUBLIC_REDIRECT_URI // e.g., 'https://zestacademy.tech/auth/callback'
+const CLIENT_ID = process.env.NEXT_PUBLIC_OAUTH_CLIENT_ID || (() => {
+  throw new Error('NEXT_PUBLIC_OAUTH_CLIENT_ID is required')
+})()
+const REDIRECT_URI = process.env.NEXT_PUBLIC_REDIRECT_URI || (() => {
+  throw new Error('NEXT_PUBLIC_REDIRECT_URI is required')
+})()
 
 /**
  * Generate PKCE challenge and redirect to authorization endpoint
+ * 
+ * This function:
+ * 1. Generates a PKCE code_verifier and code_challenge
+ * 2. Stores code_verifier in sessionStorage for later token exchange
+ * 3. Generates and stores a random state for CSRF protection
+ * 4. Redirects the user to the authorization server
  */
 export async function initiateLogin() {
   // Generate PKCE challenge
@@ -110,7 +120,7 @@ export async function POST(request: NextRequest) {
   try {
     // Get data from client
     const body = await request.json()
-    const { code, state, code_verifier: codeVerifier } = body
+    const { code, state, codeVerifier } = body
     
     // Validate required parameters
     if (!code || !state || !codeVerifier) {
@@ -260,9 +270,9 @@ export default function AuthCallback() {
       body: JSON.stringify({
         code,
         state,
-        code_verifier: codeVerifier,
+        codeVerifier, // PKCE code verifier from sessionStorage
       }),
-      credentials: 'include', // Important: includes cookies in request/response
+      credentials: 'include', // Include cookies - ensures httpOnly cookies are sent and received
     })
       .then(async (res) => {
         if (res.ok) {
