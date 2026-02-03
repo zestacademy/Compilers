@@ -162,16 +162,41 @@ export async function POST(request: NextRequest) {
     
     const user = await userInfoResponse.json()
     
-    // Return success with tokens (they'll be set as cookies in middleware or returned to client)
-    return NextResponse.json({
+    // Create response with success status
+    const response = NextResponse.json({
       success: true,
       user,
-      tokens: {
-        access_token: tokens.access_token,
-        refresh_token: tokens.refresh_token,
-        expires_in: tokens.expires_in,
-      }
     })
+    
+    // Store tokens in httpOnly cookies (server-side only)
+    response.cookies.set('access_token', tokens.access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: tokens.expires_in || 3600, // 1 hour default
+      path: '/',
+    })
+    
+    if (tokens.refresh_token) {
+      response.cookies.set('refresh_token', tokens.refresh_token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 30 * 24 * 60 * 60, // 30 days
+        path: '/',
+      })
+    }
+    
+    // Store user info (can be non-httpOnly if needed for client-side access)
+    response.cookies.set('user', JSON.stringify(user), {
+      httpOnly: false, // Accessible to JavaScript for UI display
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: tokens.expires_in || 3600,
+      path: '/',
+    })
+    
+    return response
   } catch (error) {
     console.error('Callback error:', error)
     return NextResponse.json(
@@ -237,20 +262,14 @@ export default function AuthCallback() {
         state,
         code_verifier: codeVerifier,
       }),
+      credentials: 'include', // Important: includes cookies in request/response
     })
       .then(async (res) => {
         if (res.ok) {
-          const data = await res.json()
+          // Tokens are now stored in httpOnly cookies by the server
+          // No need to handle them client-side
           
-          // Store tokens in httpOnly cookies (if not done server-side)
-          // Or handle tokens according to your session management strategy
-          document.cookie = `access_token=${data.tokens.access_token}; path=/; max-age=${data.tokens.expires_in}; secure; samesite=lax`
-          
-          if (data.tokens.refresh_token) {
-            document.cookie = `refresh_token=${data.tokens.refresh_token}; path=/; max-age=${30 * 24 * 60 * 60}; secure; samesite=lax`
-          }
-          
-          // Clean up
+          // Clean up PKCE data
           sessionStorage.removeItem('pkce_code_verifier')
           sessionStorage.removeItem('oauth_state')
           
@@ -322,16 +341,62 @@ REDIRECT_URI=https://compilers.zestacademy.tech/auth/callback
 
 ### Accessing Protected Resources
 
-Once authenticated, use the access token to access protected resources:
+Since tokens are stored in httpOnly cookies, they are automatically sent with requests. Your API routes can access them server-side:
+
+#### Protected API Route Example (`app/api/user/profile/route.ts`)
 
 ```typescript
-// Example: Fetch user profile
+import { NextRequest, NextResponse } from 'next/server'
+
+export async function GET(request: NextRequest) {
+  // Access token is automatically available in cookies
+  const accessToken = request.cookies.get('access_token')?.value
+  
+  if (!accessToken) {
+    return NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    )
+  }
+  
+  // Use token to fetch user data from auth server or validate it
+  try {
+    const response = await fetch(`${AUTH_SERVER_URL}/api/oauth/userinfo`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+    
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: 'Invalid token' },
+        { status: 401 }
+      )
+    }
+    
+    const user = await response.json()
+    return NextResponse.json({ user })
+  } catch (error) {
+    return NextResponse.json(
+      { error: 'Failed to fetch user' },
+      { status: 500 }
+    )
+  }
+}
+```
+
+#### Client-Side Usage
+
+```typescript
+// Client simply calls the API - cookies are sent automatically
 async function getUserProfile() {
   const response = await fetch('/api/user/profile', {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
+    credentials: 'include', // Important: includes cookies
   })
+  
+  if (!response.ok) {
+    throw new Error('Failed to fetch profile')
+  }
   
   return response.json()
 }
@@ -339,70 +404,198 @@ async function getUserProfile() {
 
 ### Token Refresh
 
-Access tokens expire after 1 hour. Use the refresh token to get a new access token:
+When the access token expires, implement automatic refresh on the backend:
+
+#### Refresh Token API Route (`app/api/auth/refresh/route.ts`)
 
 ```typescript
-async function refreshAccessToken(refreshToken: string) {
-  const response = await fetch(`${AUTH_SERVER_URL}/api/oauth/token`, {
+import { NextRequest, NextResponse } from 'next/server'
+
+const AUTH_SERVER_URL = process.env.AUTH_SERVER_URL || 'https://auth.zestacademy.tech'
+const CLIENT_ID = process.env.OAUTH_CLIENT_ID
+
+export async function POST(request: NextRequest) {
+  try {
+    const refreshToken = request.cookies.get('refresh_token')?.value
+    
+    if (!refreshToken) {
+      return NextResponse.json(
+        { error: 'No refresh token' },
+        { status: 401 }
+      )
+    }
+    
+    // Exchange refresh token for new access token
+    const response = await fetch(`${AUTH_SERVER_URL}/api/oauth/token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        grant_type: 'refresh_token',
+        refresh_token: refreshToken,
+        client_id: CLIENT_ID,
+      }),
+    })
+    
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: 'Token refresh failed' },
+        { status: 401 }
+      )
+    }
+    
+    const tokens = await response.json()
+    
+    // Create response and set new tokens
+    const result = NextResponse.json({ success: true })
+    
+    result.cookies.set('access_token', tokens.access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: tokens.expires_in || 3600,
+      path: '/',
+    })
+    
+    // Update refresh token if a new one is provided
+    if (tokens.refresh_token) {
+      result.cookies.set('refresh_token', tokens.refresh_token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 30 * 24 * 60 * 60,
+        path: '/',
+      })
+    }
+    
+    return result
+  } catch (error) {
+    console.error('Refresh error:', error)
+    return NextResponse.json(
+      { error: 'Server error' },
+      { status: 500 }
+    )
+  }
+}
+```
+
+#### Client-Side Refresh
+
+```typescript
+async function refreshAccessToken() {
+  const response = await fetch('/api/auth/refresh', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      grant_type: 'refresh_token',
-      refresh_token: refreshToken,
-      client_id: CLIENT_ID,
-    }),
+    credentials: 'include',
   })
   
   if (!response.ok) {
+    // Refresh failed, redirect to login
+    window.location.href = '/login'
     throw new Error('Token refresh failed')
   }
   
-  return response.json() // { access_token, refresh_token, ... }
+  return response.json()
 }
 ```
 
 ### Logout
 
-To log out, revoke the tokens and clear the session:
+To log out, call a server-side logout endpoint that properly clears httpOnly cookies:
+
+#### Create Logout API Route (`app/api/auth/logout/route.ts`)
+
+```typescript
+import { NextRequest, NextResponse } from 'next/server'
+
+const AUTH_SERVER_URL = process.env.AUTH_SERVER_URL || 'https://auth.zestacademy.tech'
+const CLIENT_ID = process.env.OAUTH_CLIENT_ID
+
+export async function POST(request: NextRequest) {
+  try {
+    // Get refresh token from httpOnly cookie
+    const refreshToken = request.cookies.get('refresh_token')?.value
+    
+    if (refreshToken) {
+      // Revoke refresh token on auth server
+      try {
+        await fetch(`${AUTH_SERVER_URL}/api/oauth/revoke`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            token: refreshToken,
+            token_type_hint: 'refresh_token',
+            client_id: CLIENT_ID,
+          }),
+        })
+      } catch (error) {
+        console.error('Failed to revoke token:', error)
+        // Continue with local logout even if revocation fails
+      }
+    }
+    
+    // Create response
+    const response = NextResponse.json({ success: true })
+    
+    // Clear all auth cookies by setting Max-Age=0
+    response.cookies.set('access_token', '', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 0,
+      path: '/',
+    })
+    
+    response.cookies.set('refresh_token', '', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 0,
+      path: '/',
+    })
+    
+    response.cookies.set('user', '', {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 0,
+      path: '/',
+    })
+    
+    return response
+  } catch (error) {
+    console.error('Logout error:', error)
+    return NextResponse.json(
+      { error: 'logout_failed' },
+      { status: 500 }
+    )
+  }
+}
+```
+
+#### Client-Side Logout
 
 ```typescript
 /**
- * Get cookie value by name
- */
-function getCookie(name: string): string | null {
-  const value = `; ${document.cookie}`
-  const parts = value.split(`; ${name}=`)
-  if (parts.length === 2) {
-    return parts.pop()?.split(';').shift() || null
-  }
-  return null
-}
-
-/**
- * Logout and revoke tokens
+ * Logout by calling server-side endpoint
  */
 async function logout() {
-  const refreshToken = getCookie('refresh_token')
-  
-  if (refreshToken) {
-    // Revoke refresh token
-    await fetch(`${AUTH_SERVER_URL}/api/oauth/revoke`, {
+  try {
+    const response = await fetch('/api/auth/logout', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        token: refreshToken,
-        token_type_hint: 'refresh_token',
-      }),
+      credentials: 'include', // Important: includes cookies
     })
+    
+    if (response.ok) {
+      // Redirect to login page
+      window.location.href = '/login'
+    } else {
+      console.error('Logout failed')
+      // Still redirect to clear client-side state
+      window.location.href = '/login'
+    }
+  } catch (error) {
+    console.error('Logout error:', error)
+    window.location.href = '/login'
   }
-  
-  // Clear cookies
-  document.cookie = 'access_token=; Max-Age=0; path=/'
-  document.cookie = 'refresh_token=; Max-Age=0; path=/'
-  document.cookie = 'user=; Max-Age=0; path=/'
-  
-  // Redirect to login
-  window.location.href = '/login'
 }
 ```
 
