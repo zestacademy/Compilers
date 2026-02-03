@@ -104,34 +104,23 @@ import { cookies } from 'next/headers'
 
 const AUTH_SERVER_URL = process.env.AUTH_SERVER_URL || 'https://auth.zestacademy.tech'
 const CLIENT_ID = process.env.OAUTH_CLIENT_ID
-const CLIENT_SECRET = process.env.OAUTH_CLIENT_SECRET // Not needed for PKCE but required by spec
 const REDIRECT_URI = process.env.REDIRECT_URI
 
-export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams
-  const code = searchParams.get('code')
-  const state = searchParams.get('state')
-  const error = searchParams.get('error')
-  
-  // Handle error
-  if (error) {
-    return NextResponse.redirect(new URL(`/login?error=${error}`, request.url))
-  }
-  
-  // Validate required parameters
-  if (!code || !state) {
-    return NextResponse.redirect(new URL('/login?error=missing_params', request.url))
-  }
-  
+export async function POST(request: NextRequest) {
   try {
-    // Get code_verifier from session/cookie (you'll need to implement this)
-    const codeVerifier = request.cookies.get('pkce_code_verifier')?.value
+    // Get data from client
+    const body = await request.json()
+    const { code, state, code_verifier: codeVerifier } = body
     
-    if (!codeVerifier) {
-      return NextResponse.redirect(new URL('/login?error=missing_verifier', request.url))
+    // Validate required parameters
+    if (!code || !state || !codeVerifier) {
+      return NextResponse.json(
+        { error: 'missing_params' },
+        { status: 400 }
+      )
     }
     
-    // Exchange authorization code for tokens
+    // Exchange authorization code for tokens with PKCE
     const tokenResponse = await fetch(`${AUTH_SERVER_URL}/api/oauth/token`, {
       method: 'POST',
       headers: {
@@ -149,7 +138,10 @@ export async function GET(request: NextRequest) {
     if (!tokenResponse.ok) {
       const errorData = await tokenResponse.json()
       console.error('Token exchange failed:', errorData)
-      return NextResponse.redirect(new URL('/login?error=token_exchange_failed', request.url))
+      return NextResponse.json(
+        { error: 'token_exchange_failed' },
+        { status: 401 }
+      )
     }
     
     const tokens = await tokenResponse.json()
@@ -162,43 +154,30 @@ export async function GET(request: NextRequest) {
     })
     
     if (!userInfoResponse.ok) {
-      return NextResponse.redirect(new URL('/login?error=userinfo_failed', request.url))
+      return NextResponse.json(
+        { error: 'userinfo_failed' },
+        { status: 401 }
+      )
     }
     
     const user = await userInfoResponse.json()
     
-    // Create session (implementation depends on your session management)
-    const response = NextResponse.redirect(new URL('/dashboard', request.url))
-    
-    // Store tokens in httpOnly cookies
-    response.cookies.set('access_token', tokens.access_token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60, // 1 hour
+    // Return success with tokens (they'll be set as cookies in middleware or returned to client)
+    return NextResponse.json({
+      success: true,
+      user,
+      tokens: {
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token,
+        expires_in: tokens.expires_in,
+      }
     })
-    
-    if (tokens.refresh_token) {
-      response.cookies.set('refresh_token', tokens.refresh_token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 30 * 24 * 60 * 60, // 30 days
-      })
-    }
-    
-    // Store user info
-    response.cookies.set('user', JSON.stringify(user), {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60, // 1 hour
-    })
-    
-    return response
   } catch (error) {
     console.error('Callback error:', error)
-    return NextResponse.redirect(new URL('/login?error=server_error', request.url))
+    return NextResponse.json(
+      { error: 'server_error' },
+      { status: 500 }
+    )
   }
 }
 ```
@@ -261,6 +240,16 @@ export default function AuthCallback() {
     })
       .then(async (res) => {
         if (res.ok) {
+          const data = await res.json()
+          
+          // Store tokens in httpOnly cookies (if not done server-side)
+          // Or handle tokens according to your session management strategy
+          document.cookie = `access_token=${data.tokens.access_token}; path=/; max-age=${data.tokens.expires_in}; secure; samesite=lax`
+          
+          if (data.tokens.refresh_token) {
+            document.cookie = `refresh_token=${data.tokens.refresh_token}; path=/; max-age=${30 * 24 * 60 * 60}; secure; samesite=lax`
+          }
+          
           // Clean up
           sessionStorage.removeItem('pkce_code_verifier')
           sessionStorage.removeItem('oauth_state')
@@ -377,6 +366,21 @@ async function refreshAccessToken(refreshToken: string) {
 To log out, revoke the tokens and clear the session:
 
 ```typescript
+/**
+ * Get cookie value by name
+ */
+function getCookie(name: string): string | null {
+  const value = `; ${document.cookie}`
+  const parts = value.split(`; ${name}=`)
+  if (parts.length === 2) {
+    return parts.pop()?.split(';').shift() || null
+  }
+  return null
+}
+
+/**
+ * Logout and revoke tokens
+ */
 async function logout() {
   const refreshToken = getCookie('refresh_token')
   
@@ -393,9 +397,9 @@ async function logout() {
   }
   
   // Clear cookies
-  document.cookie = 'access_token=; Max-Age=0'
-  document.cookie = 'refresh_token=; Max-Age=0'
-  document.cookie = 'user=; Max-Age=0'
+  document.cookie = 'access_token=; Max-Age=0; path=/'
+  document.cookie = 'refresh_token=; Max-Age=0; path=/'
+  document.cookie = 'user=; Max-Age=0; path=/'
   
   // Redirect to login
   window.location.href = '/login'
